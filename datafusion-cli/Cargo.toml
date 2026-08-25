@@ -68,6 +68,7 @@ regex = { workspace = true }
 rustyline = "18.0"
 tokio = { workspace = true, features = ["macros", "parking_lot", "rt", "rt-multi-thread", "signal", "sync"] }
 url = { workspace = true }
+vgi-datafusion = { path = "../../vgi-datafusion" }
 
 [lints]
 workspace = true

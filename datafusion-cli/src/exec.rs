@@ -18,7 +18,7 @@
 //! Execution functions
 
 use crate::cli_context::CliSessionContext;
-use crate::helper::split_from_semicolon;
+use crate::helper::{is_vgi_attach_or_detach, split_from_semicolon};
 use crate::print_format::PrintFormat;
 use crate::{
     command::{Command, OutputFormat},
@@ -218,6 +218,16 @@ pub(super) async fn exec_and_print(
     print_options: &PrintOptions,
     sql: String,
 ) -> Result<()> {
+    // DataFusion's parser does not accept DuckDB's `LOCATION` ATTACH option,
+    // so let the VGI adapter intercept ATTACH/DETACH before parsing. These
+    // statements return an empty DataFrame and have no rows to print.
+    if is_vgi_attach_or_detach(&sql)
+        && let Some(vgi_ctx) = ctx.vgi_session_context()
+    {
+        vgi_datafusion::sql(vgi_ctx, &sql).await?;
+        return Ok(());
+    }
+
     let task_ctx = ctx.task_ctx();
     let options = task_ctx.session_config().options();
     let dialect = &options.sql_parser.dialect;
@@ -327,6 +337,20 @@ impl StatementExecutor {
     ) -> Result<(datafusion::dataframe::DataFrame, AdjustedPrintOptions)> {
         let adjusted = AdjustedPrintOptions::new(print_options.clone())
             .with_statement(&self.statement);
+
+        // SQL statements, including those wrapped by EXPLAIN, go through the
+        // VGI-aware adapter so qualified remote functions and named
+        // table-function arguments are rewritten before DataFusion plans them.
+        // Other CLI-native statements retain the normal path.
+        if matches!(
+            &self.statement,
+            Statement::Statement(_) | Statement::Explain(_)
+        ) && let Some(vgi_ctx) = ctx.vgi_session_context()
+        {
+            let df = vgi_datafusion::sql(vgi_ctx, &self.statement.to_string()).await?;
+            let adjusted = adjusted.with_plan(df.logical_plan());
+            return Ok((df, adjusted));
+        }
 
         let plan = create_plan(ctx, self.statement, false).await?;
         let adjusted = adjusted.with_plan(&plan);

@@ -727,7 +727,7 @@ dependencies = [
  "http 0.2.12",
  "http 1.4.0",
  "percent-encoding",
- "sha2",
+ "sha2 0.11.0",
  "time",
  "tracing",
 ]
@@ -1019,6 +1019,15 @@ dependencies = [
  "num-bigint 0.4.6",
  "num-integer",
  "num-traits",
+]
+
+[[package]]
+name = "bincode"
+version = "1.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1f45e9417d87227c7a56d22e471c6206462cba514c7590c09aff4cf6d1ddcad"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -1887,6 +1896,7 @@ dependencies = [
  "testcontainers-modules",
  "tokio",
  "url",
+ "vgi-datafusion",
 ]
 
 [[package]]
@@ -2263,7 +2273,7 @@ dependencies = [
  "num-traits",
  "rand 0.9.4",
  "regex",
- "sha2",
+ "sha2 0.11.0",
  "tokio",
  "uuid",
 ]
@@ -2636,7 +2646,7 @@ dependencies = [
  "rand 0.9.4",
  "serde_json",
  "sha1 0.11.0",
- "sha2",
+ "sha2 0.11.0",
  "tokio",
  "twox-hash",
  "url",
@@ -3521,6 +3531,7 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "tower-service",
+ "webpki-roots",
 ]
 
 [[package]]
@@ -4781,7 +4792,7 @@ dependencies = [
  "md-5 0.11.0",
  "memchr",
  "rand 0.10.1",
- "sha2",
+ "sha2 0.11.0",
  "stringprep",
 ]
 
@@ -5260,6 +5271,7 @@ checksum = "eddd3ca559203180a307f12d114c268abf583f59b03cb906fd0b3ff8646c1147"
 dependencies = [
  "base64 0.22.1",
  "bytes",
+ "futures-channel",
  "futures-core",
  "futures-util",
  "h2",
@@ -5292,6 +5304,7 @@ dependencies = [
  "wasm-bindgen-futures",
  "wasm-streams",
  "web-sys",
+ "webpki-roots",
 ]
 
 [[package]]
@@ -5346,6 +5359,16 @@ dependencies = [
  "quote",
  "rand 0.8.6",
  "syn 2.0.119",
+]
+
+[[package]]
+name = "rust_decimal"
+version = "1.42.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "be2a24f50780bc85f09cc6ac299bdf1424302742d77221106859c9d8b102126a"
+dependencies = [
+ "arrayvec",
+ "num-traits",
 ]
 
 [[package]]
@@ -5734,6 +5757,17 @@ dependencies = [
  "cfg-if",
  "cpufeatures 0.3.0",
  "digest 0.11.2",
+]
+
+[[package]]
+name = "sha2"
+version = "0.10.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283"
+dependencies = [
+ "cfg-if",
+ "cpufeatures 0.2.17",
+ "digest 0.10.7",
 ]
 
 [[package]]
@@ -6720,6 +6754,7 @@ dependencies = [
  "rustls-pki-types",
  "ureq-proto",
  "utf8-zero",
+ "webpki-roots",
 ]
 
 [[package]]
@@ -6793,6 +6828,109 @@ name = "version_check"
 version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
+
+[[package]]
+name = "vgi-client"
+version = "0.31.0"
+dependencies = [
+ "arrow-array",
+ "arrow-schema",
+ "libc",
+ "log",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "ureq",
+ "vgi-protocol",
+ "vgi-rpc",
+ "vgi-rpc-client",
+]
+
+[[package]]
+name = "vgi-datafusion"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "datafusion",
+ "futures",
+ "serde_json",
+ "tokio",
+ "vgi-client",
+ "vgi-protocol",
+]
+
+[[package]]
+name = "vgi-protocol"
+version = "0.31.0"
+dependencies = [
+ "arrow-array",
+ "arrow-ipc",
+ "arrow-schema",
+ "vgi-rpc",
+]
+
+[[package]]
+name = "vgi-rpc"
+version = "0.23.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0e6a9e86e9c3613e7297abe48754ee03a00582f73451dbcbef37cfb4103b3204"
+dependencies = [
+ "arrow-array",
+ "arrow-buffer",
+ "arrow-cast",
+ "arrow-data",
+ "arrow-ipc",
+ "arrow-schema",
+ "arrow-select",
+ "bincode",
+ "bytes",
+ "chrono",
+ "flatbuffers",
+ "libc",
+ "rust_decimal",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "socket2",
+ "thiserror",
+ "tracing",
+ "url",
+ "vgi-rpc-macros",
+ "windows-sys 0.59.0",
+ "zstd",
+]
+
+[[package]]
+name = "vgi-rpc-client"
+version = "0.23.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "63e11f9fc258ed5ad58366301d30b76d0f6bb123d8c202549ae87d3bb7c3dadc"
+dependencies = [
+ "arrow-array",
+ "arrow-ipc",
+ "arrow-schema",
+ "base64 0.22.1",
+ "bytes",
+ "flate2",
+ "reqwest",
+ "serde_json",
+ "sha2 0.10.9",
+ "socket2",
+ "tracing",
+ "vgi-rpc",
+ "zstd",
+]
+
+[[package]]
+name = "vgi-rpc-macros"
+version = "0.23.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b7f2c26f314e4913d85793eea8d35cfb6a1e2e4f78d2726604b88833095023fe"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
 
 [[package]]
 name = "vsimd"
@@ -7032,6 +7170,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "webpki-roots"
+version = "1.0.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7dcd9d09a39985f5344844e66b0c530a33843579125f23e21e9f0f220850f22a"
+dependencies = [
+ "rustls-pki-types",
+]
+
+[[package]]
 name = "whoami"
 version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7181,6 +7328,15 @@ name = "windows-sys"
 version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "282be5f36a8ce781fad8c8ae18fa3f9beff57ec1b52cb3de0789201425d9a33d"
+dependencies = [
+ "windows-targets 0.52.6",
+]
+
+[[package]]
+name = "windows-sys"
+version = "0.59.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e38bc4d79ed67fd075bcc251a1c39b32a1776bbe92e5bef1f0bf1f8c531853b"
 dependencies = [
  "windows-targets 0.52.6",
 ]

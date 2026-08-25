@@ -52,6 +52,13 @@ pub trait CliSessionContext {
         &self,
         plan: LogicalPlan,
     ) -> Result<DataFrame, DataFusionError>;
+
+    /// Return the underlying context when VGI SQL rewriting is supported.
+    ///
+    /// Custom CLI contexts retain the standard planning path by default.
+    fn vgi_session_context(&self) -> Option<&SessionContext> {
+        None
+    }
 }
 
 #[async_trait::async_trait]
@@ -94,5 +101,9 @@ impl CliSessionContext for SessionContext {
         plan: LogicalPlan,
     ) -> Result<DataFrame, DataFusionError> {
         self.execute_logical_plan(plan).await
+    }
+
+    fn vgi_session_context(&self) -> Option<&SessionContext> {
+        Some(self)
     }
 }

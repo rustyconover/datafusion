@@ -86,6 +86,12 @@ impl CliHelper {
             };
             let lines = split_from_semicolon(sql);
             for line in lines {
+                // VGI's DuckDB-compatible ATTACH syntax includes options that
+                // DataFusion's parser rejects. The executor handles these
+                // statements before parsing, so accept them here as well.
+                if is_vgi_attach_or_detach(&line) {
+                    continue;
+                }
                 match DFParser::parse_sql_with_dialect(&line, dialect.as_ref()) {
                     Ok(statements) if statements.is_empty() => {
                         return Ok(ValidationResult::Invalid(Some(
@@ -179,6 +185,14 @@ impl Validator for CliHelper {
 }
 
 impl Helper for CliHelper {}
+
+/// Returns whether the statement is handled by the VGI SQL adapter before
+/// DataFusion parsing.
+pub(crate) fn is_vgi_attach_or_detach(sql: &str) -> bool {
+    sql.split_ascii_whitespace().next().is_some_and(|keyword| {
+        keyword.eq_ignore_ascii_case("ATTACH") || keyword.eq_ignore_ascii_case("DETACH")
+    })
+}
 
 /// Splits a string which consists of multiple queries.
 pub(crate) fn split_from_semicolon(sql: &str) -> Vec<String> {
@@ -319,6 +333,24 @@ mod tests {
         let result =
             readline_direct(Cursor::new(r"select 1 # 2;".as_bytes()), &validator)?;
         assert!(matches!(result, ValidationResult::Valid(None)));
+
+        Ok(())
+    }
+
+    #[test]
+    fn vgi_attach_and_detach_bypass_datafusion_validation() -> Result<()> {
+        let validator = CliHelper::default();
+
+        let attach = "ATTACH 'open_meteo' AS m (\n  TYPE vgi,\n  LOCATION 'https://example.com'\n);";
+        assert!(matches!(
+            validator.validate_input(attach)?,
+            ValidationResult::Valid(None)
+        ));
+
+        assert!(matches!(
+            validator.validate_input("DETACH m;")?,
+            ValidationResult::Valid(None)
+        ));
 
         Ok(())
     }
