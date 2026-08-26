@@ -28,6 +28,7 @@ use datafusion::execution::memory_pool::{
     FairSpillPool, GreedyMemoryPool, MemoryPool, TrackConsumersPool,
 };
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
+use datafusion::execution::session_state::SessionStateBuilder;
 use datafusion::logical_expr::ExplainFormat;
 use datafusion::prelude::SessionContext;
 use datafusion_cli::catalog::DynamicObjectStoreCatalog;
@@ -50,6 +51,7 @@ use datafusion::common::config_err;
 use datafusion::config::ConfigOptions;
 use datafusion::execution::disk_manager::{DiskManagerBuilder, DiskManagerMode};
 use mimalloc::MiMalloc;
+use vgi_datafusion::VgiOrderPushdownSessionStateBuilderExt;
 
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
@@ -244,8 +246,13 @@ async fn main_inner() -> Result<()> {
     let runtime_env = rt_builder.build_arc()?;
 
     // enable dynamic file query
-    let ctx = SessionContext::new_with_config_rt(session_config, runtime_env)
-        .enable_url_table();
+    let state = SessionStateBuilder::new()
+        .with_config(session_config)
+        .with_runtime_env(runtime_env)
+        .with_default_features()
+        .with_vgi_order_pushdown()
+        .build();
+    let ctx = SessionContext::new_with_state(state).enable_url_table();
     ctx.refresh_catalogs().await?;
     // install dynamic catalog provider that can register required object stores
     ctx.register_catalog_list(Arc::new(DynamicObjectStoreCatalog::new(
